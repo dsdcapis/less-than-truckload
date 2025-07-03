@@ -17,7 +17,6 @@ findAllOpenApiYamlDirs() {
     done < <(find "$currentFolder" -type f -name "openapi.yaml" -print0 | xargs -0 -n1 dirname -z | sort -zu)
 }
 
-
 # Creates static html files for openapi.yaml file in the current directory
 loadStaticHtmlToFolder() {
     local folder="$1"
@@ -83,12 +82,18 @@ generateHighLevelIndex() {
     echo "Created high level index at \"$indexFile\""
 }
 
-allFolders=()
-findAllOpenApiYamlDirs allFolders
+# mainProcess is the primary function that orchestrates the creation of a static HTML file
+# for ReDoc documentation. It handles the main workflow, including any necessary setup,
+# execution of commands, and error handling required to generate the documentation output.
+mainProcess() {
+    findAllOpenApiYamlDirs allFolders
 
-for directory in "${allFolders[@]}"; do
-    echo "Processing directory: \"$directory\""
-    loadStaticHtmlToFolder "$directory"
-done
+    for directory in "${allFolders[@]}"; do
+        echo "Processing directory: \"$directory\""
+        loadStaticHtmlToFolder "$directory"
+    done
 
-generateHighLevelIndex
+    generateHighLevelIndex
+}
+
+mainProcess
