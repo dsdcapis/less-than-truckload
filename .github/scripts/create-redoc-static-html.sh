@@ -58,12 +58,18 @@ generateHighLevelIndex() {
         fi
     done
 
+    # Sort parents
+    mapfile -t sorted_parents < <(printf "%s\n" "${!tree[@]}" | sort -V)
+
     # Output the tree as nested lists
-    for parent in "${!tree[@]}"; do
+    for parent in "${sorted_parents[@]}"; do
         echo "        <li>$parent" >> "$indexFile"
         if [[ -n "${tree[$parent]}" ]]; then
+            # Sort children
+            read -ra children <<< "${tree[$parent]}"
+            IFS=$'\n' sorted_children=($(printf "%s\n" "${children[@]}" | sort -V))
             echo "            <ul>" >> "$indexFile"
-            for child in ${tree[$parent]}; do
+            for child in "${sorted_children[@]}"; do
                 if [[ -f "$publicFolder/$parent/$child/index.html" ]]; then
                     echo "                <li><a href=\"$parent/$child/index.html\">$child</a></li>" >> "$indexFile"
                 fi
