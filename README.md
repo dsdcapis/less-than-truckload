@@ -4,10 +4,6 @@ This is the home of all artifacts created by the [Digital Standards Development 
 
 The purpose of the council is to facilitate collaboration, automation, standardization, and digitalization across all LTL industry participants with the hopes of elevating the industry together.
 
-## Read the Specs
-
-To read the specs, visit [dsdcapis.github.io/less-than-truckload](https://dsdcapis.github.io/less-than-truckload/).
-
 ## Participation
 
 See the [CONTRIBUTING file](CONTRIBUTING.md) in the repository for more details on how to participate.
