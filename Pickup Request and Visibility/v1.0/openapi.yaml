@@ -1,0 +1,966 @@
+openapi: 3.0.0
+info:
+  description: 'This document provides the API specification for the Pickup Request and Visibility Service.'
+  version: 1.0.0
+  title: Pickup Request and Visibility Service
+paths:
+  /v1/pickups/:
+    post:
+      summary: Create a new Pickup
+      description: This operation creates a new Pickup Request.
+      tags:
+        - Pickup Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PICKUP_REQUEST'
+      responses:
+        '200':
+          description: Pickup Request Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PICKUP_REQUEST_RESPONSE'
+        '400':
+          description: Error response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pickup Request could not be created
+    get:
+      summary: Get a Pickup
+      description: This operation provides visibility into a Pickup Request.
+      tags:
+        - Pickup Visibility
+      parameters:
+        - in: query
+          name: lookupValue
+          required: true
+          description: The value to look up
+          schema:
+            type: string
+        - in: query
+          name: lookupType
+          required: true
+          description: The type of value to look up
+          schema:
+            type: string
+            enum: ['PickupConfirmationID', 'PRO']
+        - in: query
+          name: requestType
+          required: true
+          description: The type of request to make
+          schema:
+            type: string
+        - in: query
+          name: isTest
+          required: true
+          description: Indicates whether the submitted request is intended to be a test
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: Pickup Request Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PICKUP_VISIBILITY_RESPONSE'
+        '404':
+          description: Pickup Request not found
+        '400':
+          description: Error response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pickup Request lookup error
+  /v1/pickups/{pickupId}:
+    put:
+      summary: Update an existing Pickup
+      description: This operation updates an existing Pickup Request.
+      tags:
+        - Pickup Requests
+      parameters:
+        - in: path
+          name: pickupId
+          required: true
+          description: The ID of the Pickup Request to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PICKUP_REQUEST'
+      responses:
+        '200':
+          description: Pickup Request Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PICKUP_REQUEST_RESPONSE'
+        '400':
+          description: Error response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pickup Request could not be updated
+    delete:
+      summary: Delete an existing Pickup
+      description: This operation deletes an existing Pickup Request.
+      tags:
+        - Pickup Requests
+      parameters:
+        - in: path
+          name: pickupId
+          required: true
+          description: The ID of the Pickup Request to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response.
+        '404':
+          description: Pickup request not found.
+        '400':
+          description: Error response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pickup Request could not be deleted
+components:
+  schemas:
+    PICKUP_REQUEST:
+      type: object
+      required:
+        - isTest
+        - pickupAddress
+        - customer
+        - emergencyContact
+        - grossPickupWeight
+        - weightUofM
+        - handlingUnitCount
+        - cubicFeet
+        - linearFeet
+        - trailerNumber
+        - loadedBy
+        - sealNumber
+        - readyDate
+        - readyTime
+        - closeTime
+        - pickupLocationTimeZone
+        - dockDoorNumber
+        - dockContactEmail
+        - dockContactName
+        - dockContactPhone
+        - confirmationEmail
+        - shipmentDetails
+        - destinationAddress
+        - billToAddress
+        - requestFunction
+        - carrierPickupNumber
+      properties: 
+        isTest:
+          type: string
+          description: Indicates whether the submitted request is indended to be a test (True/False)
+          example: FALSE
+          nullable: false
+        pickupAddress:
+          type: array
+          description: An array to hold addresses (origin is required, destination zip required, other fields optional)
+          nullable: false
+          items:
+            type: object
+            required:
+              - orgAddressName
+              - orgAddressLine1
+              - orgAddressLine2
+              - orgCity
+              - orgContactName
+              - orgCountry
+              - orgPhoneNumber
+              - orgState
+              - orgZip
+            properties:
+              orgAccountNumber: 
+                type: string
+                description: Account number for Bill To (not required for physical, but may be needed for digital transmission. Not all carriers require)
+                nullable: true
+              orgAddressName:
+                type: string
+                description: The name of the company for a given address
+                nullable: false
+              orgAddressLine1:
+                type: string
+                description: The primary address line for a given address
+                nullable: false
+              orgAddressLine2:
+                type: string
+                description: The secondary address line for a given address
+                nullable: true
+              orgCity:
+                type: string
+                description: The city for a given address
+                nullable: false
+              orgContactName: 
+                type: string
+                description: Name of contact (attention or contact)
+                nullable: true
+              orgCountry:
+                type: string
+                description: The country for a given address (CAN, MEX, USA). Protects against overlap in different countries.
+                nullable: false
+              orgPhoneNumber:
+                type: string
+                description: The phone number for a given address
+                nullable: true
+              orgState:
+                type: string
+                description: The two-letter state code for a given address
+                nullable: false
+              orgStoreNumber:
+                type: string
+                description: Number of the store
+                nullable: true
+              orgZip:
+                type: string
+                description: The 5-digit (or 6-characters for Canada) zip code for a given address (expand to allow 10 characters, zip + 4, some systems have spaces in them and CAN can be 7)
+                nullable: false
+        customer:
+          type: string
+          description: The name (or code) of the customer from which the bill of lading information originated. Typically, the shipper of the freight. Similar to EDI trading partner, sender of the information.
+          nullable: true
+        emergencyContact:
+          type: array
+          description: An array to hold emergency contact information
+          nullable: true
+          items:
+            type: object
+            required:
+              - emergName
+              - emergPhone
+              - emergEmail
+            properties:
+              emergName:
+                type: string
+                description: Name of contact
+                nullable: true
+              emergPhone:
+                type: string
+                description: Phone of contact
+                nullable: true
+              emergEmail:
+                type: string
+                description: Email of contact
+                nullable: true
+        grossPickupWeight:
+          type: integer
+          description: The gross weight (in pounds) of the pickup request of all BOLs on PU Request
+          nullable: false
+        weightUofM:
+          type: string
+          description: Future proofing for KG in Canada and Mexico - applies to entire document
+          nullable: false
+        handlingUnitCount:
+          type: integer
+          description: Total handling units across all BOLs on PU Request
+          nullable: false
+        cubicFeet:
+          type: integer
+          description: The total cubic feet of the shipment
+          nullable: true
+        linearFeet:
+          type: integer
+          description: The total linear feet required for the pickup
+          nullable: true
+        trailerNumber:
+          type: string
+          description: Number of the trailer
+          nullable: true
+        loadedBy:
+          type: string
+          description: Loaded by either shipper or driver
+          nullable: true
+        sealNumber:
+          type: string
+          description: Number(s) of seals
+          nullable: true
+        warehouseName:
+          type: string
+          description: Warehouse that goods are located
+          nullable: true
+        readyDate:
+          type: string
+          format: date-time
+          description: Date entire pickup request is ready. (format ISO-8601)
+          nullable: true
+        readyTime:
+          type: string
+          format: date-time
+          description: Time entire pickup request is ready. (format ISO-8601). Time the freight is ready, earliest time the driver can show up.
+          nullable: true
+        closeTime:
+          type: string
+          format: date-time
+          description: Time shipper location closes. Time the shipper closes, latest time the driver can show up.
+          nullable: true
+        openDate:
+          type: string
+          format: date-time
+          description: Informational only. (format ISO-8601)
+          nullable: true
+        openTime:
+          type: string
+          format: date-time
+          description: Informational only. (format ISO-8601)
+          nullable: true
+        pickupLocationTimeZone:
+          type: string
+          description: UTC+# timezone
+          nullable: true
+        dockDoorNumber:
+          type: string
+          description: Dock door for the pickup
+          nullable: true
+        dockContactEmail:
+          type: string
+          description: Shipping department contact email
+          nullable: true
+        dockContactName:
+          type: string
+          description: Shipping department contact name
+          nullable: true
+        dockContactPhone:
+          type: string
+          description: Shipping department contact phone
+          nullable: true
+        confirmationEmail:
+          type: string
+          description: Address to email pickup response to (in addition to API accept/reject/etc)
+          nullable: true
+        shipmentDetails:
+          type: array
+          description: An array to hold information about what's being picked up
+          nullable: true
+          items:
+            type: object
+            required:
+              - shipperRef
+              - proNumber
+              - deliveryBeginDate
+              - deliveryDateType
+              - deliveryEndDate
+              - descriptionDetails
+              - additionalShipperInfo
+              - description
+              - freightClass
+              - hazmatCheck
+              - individualPieceType
+              - individualPieces
+              - nmfc
+              - nmfcSub
+              - weight
+              - grossShipmentWeight
+              - netShipmentWeight
+              - handlingUnitCount
+              - handlingUnitDetails
+              - handlingUnitType
+              - hazmatContactName
+              - hazmatContactPhoneNumber
+              - hazmatContractNumber
+              - referenceNumbers
+              - shipmentServices
+              - specialInstructionsDelivery
+              - specialInstructionsPickup
+            properties:
+              shipperRef:
+                type: string
+                description: Shipper reference number for individual shipment - load \#, shipment \#, etc. Can also be pro
+                nullable: true
+              proNumber:
+                type: string
+                description: The pro number for the shipment
+                nullable: true
+              crossRefPro:
+                type: string
+                description: Cross reference PRO number provided by eBOL API
+                nullable: true
+              deliveryBeginDate:
+                type: string
+                format: date-time
+                description: The date (with or without time) the shipment requested to be delivered. (format ISO-8601)
+                nullable: true
+              deliveryDateType: 
+                type: string
+                description: The type of delivery date requested (Deliver On or After Date, Deliver By Date, Delivery Window, Required Delivery Date)
+                nullable: true
+              deliveryEndDate:
+                type: string
+                format: date-time
+                description: The end date (with or without time) used when a "Delivery Window" type is requested. (format ISO-8601)
+                nullable: true
+              descriptionDetails: 
+                type: array
+                description: An array to hold details on the types of freight being shipped.
+                nullable: true
+                items:
+                  type: string
+              additionalShipperInfo:
+                type: string
+                description: Additional information about shipper per line item
+                nullable: true
+              description:
+                type: string
+                description: The description of the freight included in the shipment
+                nullable: true
+              freightClass:
+                type: string
+                description: The class of the freight described (50, 55, 60, 65, 70, 77, 85, 92, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500)
+                nullable: true
+              hazmatCheck:
+                type: boolean
+                description: A flag used to identify whether the freight described is hazardous materials.
+                nullable: false
+              individualPieceType:
+                type: string
+                description: The unit type for the individual pieces of the described freight (BAG, BALE, BDL, BOX, BSKD, CAN, CASE, CRT, CTN, DRUM, LSE, OTH, PAIL, REEL, ROLL, SKID, TOTE, WSKD)
+                nullable: true
+              individualPieces:
+                type: integer
+                description: The number of individual pieces included in the handling unit for the described freight
+                nullable: true
+              nmfc:
+                type: string
+                description: The NMFC code for the described freight
+                nullable: true
+              nmfcSub:
+                type: string
+                description: The sub value for the NMFC of the described freight
+                nullable: true
+              weight:
+                type: integer
+                description: The weight (in pounds) of the described freight
+                nullable: true
+              grossShipmentWeight:
+                type: integer
+                description: Gross/total weight (in pounds) of the described freight
+                nullable: true
+              netShipmentWeight:
+                type: integer
+                description: The net weight (in pounds) of the shipment
+                nullable: true
+              handlingUnitCount:
+                type: integer
+                description: The handling unit count for the shipment
+                nullable: true
+              handlingUnitDetails:
+                type: array
+                description: This array is used to hold additional details about handling units
+                nullable: true
+                items:
+                  type: object
+                  required:
+                    - height
+                    - length
+                    - unitCount
+                    - totalUnitCount
+                    - totalLinearFeetofShipment
+                    - unitType
+                    - width
+                    - weight
+                    - totalWeight
+                  properties:
+                    height: 
+                      type: integer
+                      description: The height of the handling units being described
+                      nullable: true
+                    length:
+                      type: integer
+                      description: The length of the handling units being described
+                      nullable: true
+                    unitCount:
+                      type: integer
+                      description: The number of handling units being described
+                      nullable: true
+                    totalUnitCount:
+                      type: integer
+                      description: The total number of handling units being described
+                      nullable: true
+                    totalLinearFeetofShipment:
+                      type: integer
+                      description: Total Linear feet of the shipment
+                      nullable: true
+                    unitType:
+                      type: string
+                      description: The type of the handling units being described
+                      nullable: true
+                    width:
+                      type: integer
+                      description: The width of the handling units being described
+                      nullable: true
+                    weight: 
+                      type: integer
+                      description: The weight (in pounds)
+                      nullable: true
+                    totalWeight:
+                      type: integer
+                      description: Total weight (in pounds)
+                      nullable: true
+              handlingUnitType:
+                type: string
+                description: The type of the handling units being described
+                nullable: true
+              hazmatContactName:
+                type: string
+                description: The name of who should be contacted in the case of a hazardous materials-related issue
+                nullable: true
+              hazmatContactPhoneNumber:
+                type: string
+                description: The phone number for the hazardous materials contact
+                nullable: true
+              hazmatContractNumber:
+                type: string
+                description: The contract number with the hazardous materials contact
+                nullable: true
+              referenceNumbers:
+                type: array
+                description: This array is used to supply reference numbers for the shipment
+                nullable: true
+                items:
+                  type: object
+                  required:
+                    - refPieceCount
+                    - referenceNumber
+                    - referenceType
+                  properties:
+                    refPieceCount:
+                      type: integer
+                      description: The number of pieces associated with the reference number (typically used for PO numbers)
+                      nullable: true
+                    referenceNumber:
+                      type: string
+                      description: The reference number for the shipment
+                      nullable: true
+                    referenceType:
+                      type: string
+                      description: The type of the reference number provided (BOL, CPH, DO, LOAD, Master BOL, Order, PO, TMC)
+                      nullable: true
+              shipmentServices:
+                type: array
+                description: An array to hold the list of services requested (accessorial codes or LTL services)
+                nullable: true
+                items:
+                  type: object
+                  required:
+                    - serviceCode
+                    - serviceDescription
+                  properties:
+                    serviceCode:
+                      type: string
+                      description: The code used to represent the service requested (accessorial codes or LTL services)
+                      nullable: true
+                    serviceDescription:
+                      type: string
+                      description: Desceription for the service (default description will be used if not provided)
+                      nullable: true
+              specialInstructionsDelivery:
+                type: string
+                description: Special delivery instructions that need to be followed for the shipment
+                nullable: true
+              specialInstructionsPickup:
+                type: string
+                description: Special pickup instructions that need to be followed for the shipment
+                nullable: true
+        destinationAddress:
+          type: array
+          description: An array to hold addresses
+          nullable: True
+          items:
+            type: object
+            required:
+              - cneeAddressName
+              - cneeAddressLine1
+              - cneeAddressLine2
+              - cneeCity
+              - cneeContactName
+              - cneeCountry
+              - cneePhoneNumber
+              - cneeState
+              - cneeStoreNumber
+              - cneeZip
+            properties:
+              cneeAddressName:
+                type: string
+                description: The name of the company for a given address
+                nullable: true
+              cneeAddressLine1:
+                type: string
+                description: The primary address line for a given address
+                nullable: true
+              cneeAddressLine2:
+                type: string
+                description: The secondary address line for a given address
+                nullable: true
+              cneeCity:
+                type: string
+                description: The city for a given address
+                nullable: true
+              cneeContactName:
+                type: string
+                description: Name of contact (attention or contact)
+                nullable: true
+              cneeCountry:
+                type: string
+                description: The country for a given address (CAN, MEX, USA). Protects against overlap in different countries.
+                nullable: true
+              cneePhoneNumber:
+                type: string
+                description: The phone number for a given address
+                nullable: true
+              cneeState:
+                type: string
+                description: The two-letter state code for a given address
+                nullable: true
+              cneeStoreNumber:
+                type: string
+                description: Number of the store
+                nullable: true
+              cneeZip:
+                type: string
+                description: The 5-digit (or 6-characters for Canada) zip code for a given address
+                nullable: true
+        billToAddress:
+          type: array
+          description: An array to hold addresses
+          nullable: true
+          items:
+            type: object
+            required:
+              - btAccountNumber
+              - btAddressName
+              - btAddressLine1
+              - btAddressLine2
+              - btCity
+              - btCountry
+              - btState
+            properties:
+              btAccountNumber:
+                type: string
+                description: Account number for Bill To (not required for physical, but may be needed for digital transmission. Not all carriers require)
+                nullable: true
+              btAddressName:
+                type: string
+                description: The name of the company for a given address
+                nullable: true
+              btAddressLine1:
+                type: string
+                description: The primary address line for a given address
+                nullable: true
+              btAddressLine2:
+                type: string
+                description: The secondary address line for a given address
+                nullable: true
+              btCity:
+                type: string
+                description: The city for a given address
+                nullable: true
+              btContactName:
+                type: string
+                description: Name of contact (attention or contact)
+                nullable: true
+              btCountry:
+                type: string
+                description: The country for a given address (CAN, MEX, USA). Protects against overlap in different countries.
+                nullable: true
+              btPhoneNumber:
+                type: string
+                description: The phone number for a given address
+                nullable: true
+              btState:
+                type: string
+                description: The two-letter state code for a given address
+                nullable: true
+              btStoreNumber:
+                type: string
+                description: Number of the store
+                nullable: true
+              btZip:
+                type: string
+                description: The 5-digit (or 6-characters for Canada) zip code for a given address
+                nullable: true
+        requestFunction:
+          type: string
+          description: NewPickup, ModifyExisting
+          nullable: false
+        carrierPickupNumber:
+          type: string
+          description: Carrier's pickup number
+          nullable: true
+    PICKUP_REQUEST_RESPONSE:
+      type: array
+      items:
+        type: object
+        required: 
+          - shipperRef
+          - carrierPickupNumber
+          - pickupStatus
+          - pickupMessage
+          - trailerNumber
+          - carrierName
+          - routing
+          - scac
+        properties:
+          shipperRef:
+            type: array
+            description: Returning ref \# from request, including Pro \#
+            items:
+              type: string
+              nullable: true
+          carrierPickupNumber:
+            type: string
+            description: Carrier's pickup number (One pickup \# for each pickup create)
+            nullable: true
+          pickupStatus:
+            type: string
+            description: Accept/reject/call us
+            nullable: true
+          pickupMessage:
+            type: array
+            description: Array of strings for informational or error messages
+            nullable: true
+            items:
+              type: string
+          trailerNumber:
+            type: string
+            description: Confirming trailer \# that will be picked up for drop & hook shippers
+            nullable: true
+          carrierName:
+            type: string
+            description: Carrier name the pickup request is sent to (Shipper needs to know carrier, especially on the shop floor)
+            nullable: true
+          routing:
+            type: string
+            description: (Defined after receipt of dispatch)
+            nullable: true
+          scac:
+            type: string
+            description: Carrier SCAC
+            nullable: true
+    PICKUP_VISIBILITY_REQUEST:
+      type: object
+      required:
+        - lookupValue
+        - lookupType
+        - requestType
+        - isTest
+      properties:
+        lookupValue:
+          type: string
+          example: 12345678232
+          description: Reference value
+          nullable: false
+        lookupType: 
+          type: string
+          example: PickupConfirmationID
+          description: Reference type (PickupConfirmationID, PRO)
+          nullable: false
+        requestType:
+          type: string
+          example: PickupStatus
+          description: Enum list request type (Status, Cancel)
+          nullable: false
+        isTest:
+          type: string
+          example: FALSE
+          description: True or False
+          nullable: false
+    PICKUP_VISIBILITY_RESPONSE:
+      type: object
+      required:
+        - pickupConfirmationId
+        - status
+        - informationCode
+        - stopEta
+        - stopEtaTimeZone
+        - equipmentInformation
+        - shipmentArray
+      properties:
+        pickupConfirmationId:
+          type: string
+          example: 12345678232
+          description: Carrier-issued Pick-up confirmation Number
+          nullable: false
+        status:
+          type: string
+          example: En Route
+          description: Current status of Pick-up per the carrier's system (Accepted, Rescheduled, En Route, Arrived, Departed, Cancelled)
+          nullable: false
+        informationCode:
+          type: object
+          description: See proposed Tab Pick-up Viz Resp Codes
+          required:
+            - code
+            - codeDescription
+            - subCode
+            - subCodeDescription
+          nullable: false
+          properties:
+            code:
+              type: string
+              example: 310
+              description: DLC Defined Code
+              nullable: true
+            codeDescription: 
+              type: string
+              example: Carrier not able to service
+              description: DLC Defined Description
+              nullable: False
+            subCode:
+              type: string
+              example: 8
+              description: Carrier defined sub code
+              nullable: true
+            subCodeDescription:
+              type: string
+              example: Received PU request too late for same day
+              description: Carrier defined description
+              nullable: true
+        stopEta:
+          type: string
+          format: date-time
+          example: 2024-11-20T00:00:00.000
+          description: Estimated time of arrival at Pick-up (format ISO-8601)
+          nullable: false
+        stopEtaTimeZone:
+          type: string
+          description: UTC+# timezone
+          nullable: false
+        equipmentInformation:
+          type: object
+          required:
+            - driverName
+            - trailerNumber
+            - gpsCoordinates
+            - stopsAway
+          nullable: true
+          properties:
+            driverName:
+              type: string
+              description: Driver name as determined by carrier (carrier discretion)
+              nullable: true
+            trailerNumber: 
+              type: string
+              description: Trailer number assigned for Pick-up
+              nullable: true
+            gpsCoordinates:
+              type: object
+              description: Last reported coordinates of the Carrier equipment to make pick-up
+              required:
+                - latitude
+                - longitude
+              nullable: True
+              properties:
+                latitude:
+                  type: number
+                  description: Latitude
+                  nullable: true
+                longitude:
+                  type: number
+                  description: Longitude
+                  nullable: true
+            stopsAway:
+              type: integer
+              description: Number of stops scheduled prior to this pick-up Starting at 3 stops away (Enum list 3, 2, 1 - will be null until 3 stops away).
+              nullable: true
+        shipmentArray:
+          type: array
+          items:
+            type: object
+            required:
+              - proNumber
+              - destinationPostalCode
+              - destinationCountry
+              - handlingUnitQuantity
+              - weight
+              - referenceNumbers
+            properties:
+              proNumber:
+                type: string
+                description: Pro Number assigned by eBOL
+                example: 72534825382
+                nullable: true
+              destinationPostalCode:
+                type: string
+                description: Consignee Postal Code (The 5-digit or 9-digit (or 6-characters for Canada) zip code for a given address.)
+                example: 44107
+                nullable: true
+              destinationCountry:
+                type: string
+                description: Destination Country (USA, CAN, MEX)
+                example: USA
+                nullable: true
+              handlingUnitQuantity:
+                type: integer
+                description: \# of Handling Units per PU request
+                example: 2
+                nullable: true
+              weight:
+                type: number
+                description: Total weight per PU request
+                example: 3200
+                nullable: true
+              referenceNumbers:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  required:
+                    - referenceType
+                    - referenceValue
+                  properties:
+                    referenceType:
+                      type: string
+                      description: eBOL defined reference fields
+                      example: PO Number
+                      nullable: true
+                    referenceValue:
+                      type: string
+                      description: Value of reference field
+                      example: BTX73636
+                      nullable: true
+    STATUS_DEFINITIONS:
+      description: |
+        * Departed with Exact Match - Carrier departed pickup with a shipment matching the Pickup Number in the Pickup Request (matching confirmed through scan by driver).
+        * Departed with Shipments - Carrier departed with one or more shipments, but no exact or multiple possible matches recorded (i.e., driver has not confirmed via scan). 
+                                  If supported by carrier, an array of shipments provided with Pickup Number, destination zip, handling units, and weight provided.
+        * Departed with No Freight - Carrier departed with no freight given by shipper.
+        * Departed with Exceptions - Carrier departed with one or more shipments, but no matches recorded (i.e., driver has scanned but Pro Numbers do not match).
+        * Pickup Rescheduled - Accepted pickup is moved to a day other than the day it was originally scheduled when accepted. 
+                             Reason code should be given (i.e., Weather, Shipper/3PL, Carrier/Capacity).
+        * Pickup Cancelled - No further pickup attempt will be made.
+                           Reason code should be given, (i.e., Weather, Shipper/3PL, Carrier)
+        * Re-Attempt - Driver went En Route but was unable to complete. The carrier will re-attempt, typically the same day or next business day.
+                     Reason code should be given (i.e., Closed, Capacity, Too Busy, Special Equipment). 
