@@ -40,7 +40,23 @@ generateHighLevelIndex() {
     <meta charset=\"UTF-8\">
     <title>API Documentation Index</title>
 </head>
+<style>
+   body {
+        font-family: Arial, sans-serif;
+        margin-left: 20px;
+    }
+    p {
+        max-width: 520px;
+    }
+    img.logo {
+        max-height: 100px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+</style>
 <body>
+    <img class="logo" src="assets/DSDC-LTL.svg" alt="Company Logo">
+    <p>Supported by the Digital Standard Development Council's (DSDC) Digital LTL Council, these API standards help organizations modernize LTL workflows through standardized, open, and scalable integration.</p>
     <h1>API Documentation Index</h1>
     <ul>" > "$indexFile"
 
@@ -82,6 +98,12 @@ generateHighLevelIndex() {
     echo "Created high level index at \"$indexFile\""
 }
 
+copyAssets() {
+    echo "Copying assets..."
+    mkdir -p "$publicFolder/assets"
+    cp "$currentFolder/assets/DSDC-LTL.svg" "$publicFolder/assets/"
+}
+
 # mainProcess is the primary function that orchestrates the creation of a static HTML file
 # for ReDoc documentation. It handles the main workflow, including any necessary setup,
 # execution of commands, and error handling required to generate the documentation output.
@@ -94,6 +116,7 @@ mainProcess() {
     done
 
     generateHighLevelIndex
+    copyAssets
 }
 
 mainProcess
