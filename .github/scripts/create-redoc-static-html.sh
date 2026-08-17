@@ -507,7 +507,7 @@ ENDHEAD
             elif [[ "$nodeType" == "txt" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local fileName="${parts[-1]}"
-                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link txt-link\" href=\"$item\" target=\"_blank\">$fileName</a><a class=\"quick-download-link\" href=\"$item\" aria-label=\"Download $fileName\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
+                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link txt-link\" href=\"$item\" target=\"_blank\" rel=\"noopener noreferrer\">$fileName</a><a class=\"quick-download-link\" href=\"$item\" aria-label=\"Download $fileName\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
             fi
         done
     }
@@ -550,8 +550,14 @@ ENDHEAD
                 checkedCount++;
                 cb.dataset.file.split('|').forEach(function(filePath) {
                     filePath = filePath.trim();
-                    if (filePath) selectedFiles.push({ path: filePath, name: filePath.split('/').pop() });
+                    if (filePath) selectedFiles.push({ path: filePath, name: filePath });
                 });
+            });
+            var seen = {};
+            selectedFiles = selectedFiles.filter(function(f) {
+                if (seen[f.path]) return false;
+                seen[f.path] = true;
+                return true;
             });
             var btn = document.getElementById('download-btn');
             document.getElementById('download-count').textContent = checkedCount;
@@ -630,20 +636,19 @@ ENDHEAD
         }
 
         async function downloadFiles(files) {
-            var txtFiles = files.filter(function(f) { return f.name.toLowerCase().endsWith('.txt'); });
-            var otherFiles = files.filter(function(f) { return !f.name.toLowerCase().endsWith('.txt'); });
-            for (var i = 0; i < txtFiles.length; i++) {
-                var f = txtFiles[i];
+            if (files.length === 1 && files[0].name.toLowerCase().endsWith('.txt')) {
+                var f = files[0];
                 var a = document.createElement('a');
                 a.href = f.path;
-                a.download = f.name.split('/').pop();
+                a.download = f.path.split('/').pop();
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                if (i < txtFiles.length - 1) await new Promise(function(r) { setTimeout(r, 300); });
+                showToast();
+                cleanDownloadUrl();
+            } else {
+                await downloadAsZip(files);
             }
-            if (otherFiles.length > 0) await downloadAsZip(otherFiles);
-            else { showToast(); cleanDownloadUrl(); }
         }
 
         function cleanDownloadUrl() {
