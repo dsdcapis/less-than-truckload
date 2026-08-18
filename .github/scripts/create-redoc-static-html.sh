@@ -22,6 +22,11 @@ findAllFiles() {
         rel_file="${file#$currentFolder/}"
         resultRef["$rel_file"]="xlsx"
     done < <(find "$currentFolder" -type f -name "*.xlsx" "${excludeArgs[@]}" -print0 | sort -z)
+
+    while IFS= read -r -d '' file; do
+        rel_file="${file#$currentFolder/}"
+        resultRef["$rel_file"]="txt"
+    done < <(find "$currentFolder" -type f -name "*.txt" "${excludeArgs[@]}" -print0 | sort -z)
 }
 loadStaticHtmlToFolder() {
     local folder="$1"
@@ -128,6 +133,17 @@ generateHighLevelIndex() {
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
+        .folder-caption {
+            list-style: none;
+            font-family: 'Nunito Sans', Arial, sans-serif;
+            color: #B4B4B4;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 16px 0 6px 0;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
         /* Tree */
         .tree {
             list-style-type: none;
@@ -171,6 +187,8 @@ generateHighLevelIndex() {
         .pdf-link::before { content: '📄 '; margin-right: 4px; }
         .xlsx-link { color: #5cb85c; }
         .xlsx-link::before { content: '📊 '; margin-right: 4px; }
+        .txt-link { color: #7ec8e3; }
+        .txt-link::before { content: '📝 '; margin-right: 4px; }
         .openapi-link { color: #5bc0de; }
         .openapi-link::before { content: '👁 '; margin-right: 4px; }
 
@@ -379,7 +397,7 @@ ENDHEAD
     # Copy PDF and XLSX files
     for path in "${sortedPaths[@]}"; do
         local fileType="${allFiles[$path]}"
-        if [[ "$fileType" == "pdf" || "$fileType" == "xlsx" ]]; then
+        if [[ "$fileType" == "pdf" || "$fileType" == "xlsx" || "$fileType" == "txt" ]]; then
             local fileDir=$(dirname "$path")
             mkdir -p "$publicFolder/$fileDir"
             cp "$currentFolder/$path" "$publicFolder/$path"
@@ -448,11 +466,15 @@ ENDHEAD
             if [[ "$nodeType" == "folder" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local folderName="${parts[-1]}"
-                
+
+                if [[ "$item" == "shared-resources" ]]; then
+                    echo "${indent}<li class=\"folder-caption\">Shared reference data used across all DSDC LTL APIs &#8212; standardized code lists and data schemas covering accessorial charges, freight classification, handling units, delay codes, address formats, and more.</li>" >> "$indexFile"
+                fi
+
                 echo "${indent}<li>" >> "$indexFile"
-                echo "${indent}    <span class=\"toggle\" onclick=\"toggleFolder(this)\">▼</span>" >> "$indexFile"
+                echo "${indent}    <span class=\"toggle\" onclick=\"toggleFolder(this)\">▶</span>" >> "$indexFile"
                 echo "${indent}    <span class=\"folder\">$folderName</span>" >> "$indexFile"
-                echo "${indent}    <ul>" >> "$indexFile"
+                echo "${indent}    <ul class=\"hidden\">" >> "$indexFile"
                 
                 printTree "$item" "$indent    "
                 
@@ -463,7 +485,13 @@ ENDHEAD
                 if [[ -f "$publicFolder/$item/index.html" ]]; then
                     IFS='/' read -ra parts <<< "$item"
                     local fileName="${parts[-1]}"
-                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName (OpenAPI) for download\" data-file=\"${item}/openapi-combined.yaml\" data-name=\"${item}/openapi-combined.yaml\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$item/index.html\">$fileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"${item}/openapi-combined.yaml\" aria-label=\"Download $fileName OpenAPI spec\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
+                    local fileList="${item}/openapi-combined.yaml"
+                    for compPath in "${!allFiles[@]}"; do
+                        if [[ "${allFiles[$compPath]}" == "xlsx" && "$compPath" == "$item/"* ]]; then
+                            fileList="$fileList|$compPath"
+                        fi
+                    done
+                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName (OpenAPI) for download\" data-file=\"$fileList\" data-name=\"${item}/openapi-combined.yaml\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$item/index.html\">$fileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"${item}/openapi-combined.yaml\" aria-label=\"Download $fileName OpenAPI spec\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
                 fi
 
             elif [[ "$nodeType" == "pdf" ]]; then
@@ -475,6 +503,11 @@ ENDHEAD
                 IFS='/' read -ra parts <<< "$item"
                 local fileName="${parts[-1]}"
                 echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link xlsx-link\" href=\"$item\" onclick=\"handleDownloadClick(event); return false;\">$fileName</a></li>" >> "$indexFile"
+
+            elif [[ "$nodeType" == "txt" ]]; then
+                IFS='/' read -ra parts <<< "$item"
+                local fileName="${parts[-1]}"
+                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link txt-link\" href=\"$item\" target=\"_blank\" rel=\"noopener noreferrer\">$fileName</a><a class=\"quick-download-link\" href=\"$item\" aria-label=\"Download $fileName\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
             fi
         done
     }
@@ -512,12 +545,23 @@ ENDHEAD
 
         function updateSelection() {
             selectedFiles = [];
+            var checkedCount = 0;
             document.querySelectorAll('.download-checkbox:checked').forEach(function(cb) {
-                selectedFiles.push({ path: cb.dataset.file, name: cb.dataset.name });
+                checkedCount++;
+                cb.dataset.file.split('|').forEach(function(filePath) {
+                    filePath = filePath.trim();
+                    if (filePath) selectedFiles.push({ path: filePath, name: filePath });
+                });
+            });
+            var seen = {};
+            selectedFiles = selectedFiles.filter(function(f) {
+                if (seen[f.path]) return false;
+                seen[f.path] = true;
+                return true;
             });
             var btn = document.getElementById('download-btn');
-            document.getElementById('download-count').textContent = selectedFiles.length;
-            btn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            document.getElementById('download-count').textContent = checkedCount;
+            btn.style.display = checkedCount > 0 ? 'block' : 'none';
         }
 
         function handleDownloadClick(event) {
@@ -538,8 +582,8 @@ ENDHEAD
                 return f.name.split('/').pop();
             }).join(', ');
 
-            if (localStorage.getItem('dsdc_signed_up') === '1') {
-                downloadAsZip(filesToDownload).catch(function(err) { showToast('Download failed: ' + err.message); });
+            if (sessionStorage.getItem('dsdc_signed_up') === '1') {
+                downloadFiles(filesToDownload).catch(function(err) { showToast('Download failed: ' + err.message); });
                 document.querySelectorAll('.download-checkbox:checked').forEach(function(cb) { cb.checked = false; });
                 updateSelection();
                 return;
@@ -567,9 +611,9 @@ ENDHEAD
                         .change();
                 },
                 onFormSubmitted: function() {
-                    localStorage.setItem('dsdc_signed_up', '1');
+                    sessionStorage.setItem('dsdc_signed_up', '1');
                     closeDownloadModal();
-                    downloadAsZip(filesToDownload).catch(function(err) {
+                    downloadFiles(filesToDownload).catch(function(err) {
                         showToast('Download failed: ' + err.message);
                     });
                     document.querySelectorAll('.download-checkbox:checked').forEach(function(cb) {
@@ -589,6 +633,28 @@ ENDHEAD
         function closeDownloadModal() {
             document.getElementById('download-modal').style.display = 'none';
             if (_modalTrigger) { _modalTrigger.focus(); _modalTrigger = null; }
+        }
+
+        async function downloadFiles(files) {
+            if (files.length === 1 && files[0].name.toLowerCase().endsWith('.txt')) {
+                var f = files[0];
+                var a = document.createElement('a');
+                a.href = f.path;
+                a.download = f.path.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast();
+                cleanDownloadUrl();
+            } else {
+                await downloadAsZip(files);
+            }
+        }
+
+        function cleanDownloadUrl() {
+            var cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('dsdc_apis_downloaded');
+            window.history.replaceState({}, '', cleanUrl);
         }
 
         async function downloadAsZip(files) {
@@ -611,9 +677,7 @@ ENDHEAD
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            var cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete('dsdc_apis_downloaded');
-            window.history.replaceState({}, '', cleanUrl);
+            cleanDownloadUrl();
             showToast();
         }
 
