@@ -7,8 +7,11 @@ info:
     This In Transit Visibility API will include all status updates along the path of the shipment and starts when the carrier acknowledges they have a shipment and ends when the carrier delivers the shipment to the receiver and the receiver acknowledges receipt.
 
     This YAML is intended to provide guidance and is not executable code. Implementers are encouraged to use provided structure and data elements where possible, however, implementation decisions including endpoint structure and available data are at the implementers discretion.
-  version: "1.1.0"
-  x-prd-version: "May 2026"
+
+    The API structure includes elements that may not be applicable to all implementation. For instance, the security section contains both bearerAuth and apiKeyAuth, however, implementers may choose to use one or both.
+
+  version: "1.2"
+  x-prd-version: "September 2026"
   contact: 
     name: NMFTA Digital LTL Council
     email: support@nmfta.org
@@ -437,7 +440,7 @@ components:
           type: string
           description: The carrier assigned Pro Number associated with the shipment.
         ReferenceNumbers:
-          $ref: '#/components/schemas/ShipmentStatusReferenceNumbers'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/referenceNumbers.txt'
         UniqueID: 
           type: string
           description: Pro + SCAC + Carrier eBOL Create Date (YYYYMMDD).
@@ -451,14 +454,14 @@ components:
           type: string
           description: Identifies the payor of the shipment (Shipper, Consignee, or Third Party).
         PickupAddress:
-          $ref: '#/components/schemas/ShipmentStatusAddress'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/standardAddress.txt'
         BillToAddress:
-          $ref: '#/components/schemas/ShipmentStatusAddress'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/standardAddress.txt'
         BillToAccountNumber:
           type: string
           description: Account number for Bill To.
         ConsigneeAddress:
-          $ref: '#/components/schemas/ShipmentStatusAddress'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/standardAddress.txt'
         DESaccessorial:
           type: [array, 'null']
           description: |
@@ -470,27 +473,22 @@ components:
             type: string
         DESLimitedAccess:
           type: [string, 'null']
-          description: |
-            Limited access type.
-
-            Valid Values: See the LimitedAccessTypes schema at the bottom of this page.
+          $ref: https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/limitedAccessType.txt
         TimeCriticalType: 
           type: [string, 'null']
-          description: |
-            Time Critical Type. 
-
-            Valid Values: See the TimeCriticalTypes schema at the bottom of this page.
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/timeCriticalTypes.txt'
         TimeCriticalInfo:
-         $ref: '#/components/schemas/TimeCriticalInfo'
+          type: object
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/timeCriticalInfo.txt'
         GrossWeight: 
           type: number
           description: Weight in pounds of total shipment.
         Commodities:
-         $ref: '#/components/schemas/ShipmentStatusVerifiedCommodity'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/commodity.txt'
         HandlingUnits:
-         $ref: '#/components/schemas/ShipmentStatusVerifiedHandlingUnit'
+         $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/handlingUnit.txt'
         ShipmentLocation:
-         $ref: '#/components/schemas/ShipmentStatusAddress'
+         $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/standardAddress.txt'
         ShipmentMilestoneStatus:
           type: string
           enum: [Picked-up, In Transit, Interline, Out for Delivery, Delivered]
@@ -498,7 +496,7 @@ components:
           type: [string, 'null']
           description: Optional field for carriers to provide carrier-specific status information.
         ShipmentTerminalInfo:
-          $ref: '#/components/schemas/ShipmentStatusVerifiedTerminalInfo'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/terminalInfo.txt'
         TimeZoneOfShipment:
           type: [string, 'null']
           description: The time in UTC (-X format) of current location.
@@ -536,13 +534,11 @@ components:
           type: [boolean,"null"]
           default: false
           description: Indicates if the shipment is going to be later than the original delivery date.  Values are true or false. The default is false.
-        DelayReason:
+        DelayReasonCode:
           type: [string, 'null']
           description: |
             Only required if Late = true. 
-
-            Valid Values: See the DelayReasonCodes schema at the bottom of this page.
-          examples: [440-2]
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/delayReasonCodes.txt'
         AppointmentRequired:
           type: [boolean,"null"]
           default: false
@@ -586,217 +582,6 @@ components:
           default: false
           description: Indicates if POD is available.  Values are true or false. The default is false.
 
-    ShipmentStatusReferenceNumbers:
-      type: object
-      required:
-        - bolNumber
-        - QuoteID
-        - ShipmentID
-        - MasterBOL
-        - poNumber
-        - AdditionalReferences
-        - trailerNumber
-      properties:
-        bolNumber:
-          type: [string, 'null']
-          description: The eBOL or BOL number for the shipment.
-        QuoteID:
-          type: [string, 'null']
-          description: Quote ID provided by the carrier for the shipment.
-        ShipmentID:
-          type: [string, 'null']
-          description: Shipper-assigned reference number for the individual shipment (load \#, shipment \#, etc. This can also be the pro.)
-        MasterBOL:
-          type: [string, 'null']
-          description: Shipper reference number for Pooled services.
-        poNumber:
-          type: [string, 'null']
-          description: Purchase Order Number provided by Consignee. There can be multiple Purchase Order Numbers associated with a single shipment.
-        AdditionalReferences:
-          type: [string, 'null']
-          description: Cross reference PRO number provided by eBOL API.
-        trailerNumber:
-          type: [string, 'null']
-          description: Trailer number currently transporting shipment.
-
-    ShipmentStatusAddress:
-      type: object
-      required:
-        - addressName
-        - addressLine1
-        - addressLine2
-        - city
-        - state
-        - postalCode
-        - country
-      properties:
-        addressName:
-          type: string
-          description: The business or personal name for the address.
-        addressLine1:
-          type: string
-          description: The primary address line for the address.
-        addressLine2:
-          type: [string, 'null']
-          description: The secondary address line for the address.
-        city:
-          type: string
-          description: The city for the address.
-        state:
-          type: string
-          description: the two-letter state/province code for the address.
-        postalCode:
-          type: string
-          description: The 5-digit + 4 or 5-digit for the United States, 5-digit for Mexico, or 6-character for Canada, postal code for the location.
-            Valid formats
-             * 12345-1234 (5 digits + 4 - USA)
-             * 12345 (5 digits - USA/MEX)
-             * A1A1A1 (6 characters - CAN)
-        country:
-          type: string
-          description: The country for the given address.
-          enum: [USA, CAN, MEX]
-
-    ShipmentStatusVerifiedCommodity:
-      type: object
-      properties:
-        description: 
-          type: [string, 'null']
-          description: The description of the commodity.
-        weight: 
-          type: [number, 'null']
-          description: The weight of the commodity.
-        weightUnit: 
-          type: [string, 'null']
-          description: The unit of weight of the commodity in kg or lbs. The default is lbs.
-          enum: [kg, lbs]
-          examples: [lbs]
-        pieces: 
-          type: [number, 'null']
-          description: The number of pieces of the commodity.
-        packagingType: 
-          type: [string, 'null']
-          description: |
-            Valid Values: See the PackagingTypes schema at the bottom of this page.
-        classification:
-          type: [number, 'null']
-          description: The class of the commodity described. Classes included 50, 55, 60, 65, 70, 77.5, 85, 92.5, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500, Not Required. 
-        nmfc:
-          type: [string, 'null']
-          description: The NMFC code of the commodity.
-        nmfcSub:
-          type: [string, 'null']
-          description: The NMFC sub code of the commodity.
-        hazardous:
-          type: boolean
-          default: false
-          description: Indicates whether the commodity is a hazardous material. Values are true or false. The default is false.
-        hazardousDescription:
-          type: [string, 'null']
-          description: The description of the hazardous material commodity.
-        hazmatContactName:
-          type: [string, 'null']
-          description: The name of who should be contacted if there is a hazardous materials-related issue with this commodity.
-        hazmatContactPhoneNumber:
-          type: [string, 'null']
-          description: The phone number for the contact person for hazardous materials-related issues with this commodity.
-        nestedOrStacked:
-          type: [string, 'null']
-          enum: [Nested, Stacked]
-          description: Indicates whether the commodity is nested or stacked.
-
-    ShipmentStatusVerifiedHandlingUnit:
-      type: object
-      description: Handling unit specific shipment attribute.
-      properties:
-        index:
-          type: [integer, 'null']
-          description: The index of the handling unit
-        count: 
-          type: [number, 'null']
-          description: The number of handling units containing the described freight.
-        type:
-          type: [string, 'null']
-          description: | 
-            Type of handling unit.
-
-            Valid values: See the HandlingUnitTypes schema at the bottom of the page.
-          examples: [BAG]
-        tareWeight: 
-          type: [number, 'null']
-          description: Weight of packaging materials and handling units separate from commodity weight.
-        weight:
-          type: [number, 'null']
-          description: The gross weight.
-        weightUnit:
-          type: [string, 'null']
-          description: The unit of weight in kg or lbs. The default is lbs.
-          enum: [kg, lbs]
-          examples: [lbs]
-        length: 
-          type: number
-          description: The length of the handling units being described.
-        width: 
-          type: number
-          description: The width of the handling units being described.
-        height: 
-          type: number
-          description: The height of the handling units being described.
-        dimensionsUnit:
-          type: string
-          enum: [In, Ft, M, CM]
-          description: Indicates the length unit of measure. Values are In (inches), Ft (feet), M (meters), or CM (centimeters).
-          examples: [In, Ft, M, CM]
-        stackable:
-          type: boolean
-          default: false
-          description: Indicates whether the freight is stackable.  Values are true or false. The default is false.
-
-    ShipmentStatusVerifiedTerminalInfo:
-      type: [object, 'null']
-      required:
-        - TerminalID
-      properties:
-        TerminalID:
-          type: [string, 'null']
-          description: The Carrier-specific terminal ID.
-        AddressLine1:
-          type: [string, 'null']
-          description: The primary address line for the terminal's address.
-        AddressLine2:
-          type: [string, 'null']
-          description: The secondary address line for the terminal's address.
-        City: 
-          type: [string, 'null']
-          description: The city for the terminal's address.
-        State:
-          type: [string, 'null']
-          description: The two-letter state code for the terminal's address.
-        PostalCode:
-          type: [string, 'null']
-          description: The 5-digit + 4 or 5-digit for the United States, 5-digit for Mexico, or 6-character for Canada, postal code for the location.
-            Valid formats
-             * 12345-1234 (5 digits + 4 - USA)
-             * 12345 (5 digits - USA/MEX)
-             * A1A1A1 (6 characters - CAN)
-        Country:
-          type: [string, 'null']
-          enum: [CAN, MEX, USA]
-          description: The country (CAN, MEX, USA) for the terminal's address.
-        ContactName: 
-          type: [string, 'null']
-          description: The contact name for the terminal.
-        PhoneNumber:
-          type: [string, 'null']
-          description: The phone number for the terminal's contact.
-        EmailAddress:
-          type: [string, 'null']
-          description: The email address for the terminal's contact.
-        TerminalStatus:
-          type: [string, 'null']
-          enum: [Arrived, Unloaded, Loaded, Departed]
-          description: Indicates the status (Arrived, Unloaded, Loaded, Departed) at the terminal.
-
     
     Notification_DeliveryUpdate:
       type: object
@@ -813,7 +598,7 @@ components:
           type: string
           description: The carrier assigned Pro Number associated with the shipment.
         shipmentReferenceNumbers:
-          $ref: '#/components/schemas/ShipmentStatusReferenceNumbers'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/referenceNumbers.txt'
         shipmentMilestoneStatus:
           description: note "Delivered" status should not be triggered until shipment is in custody of final consignee. "Interline" is the correct status for transfer to Interline partner carrier if detailed milestones are unavailable.
           type: string
@@ -835,7 +620,7 @@ components:
           type: string
           enum: [origin, intermediate, delivery, interline]
         terminalAddress:
-          $ref: '#/components/schemas/ShipmentStatusVerifiedTerminalInfo'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/terminalInfo.txt'
         trailerNumber:
           type: [string, 'null']
           description: Trailer number currently transporting shipment. 
@@ -870,7 +655,7 @@ components:
           type: string
           description: The carrier assigned Pro Number associated with the shipment.
         shipmentReferenceNumbers:
-          $ref: '#/components/schemas/ShipmentStatusReferenceNumbers'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/referenceNumbers.txt'
         TimeZoneOfShipment:
           type: [string, 'null']
           description: The time in UTC (-X format) of current location.
@@ -882,9 +667,9 @@ components:
           type: string
           description: valid messages for notification_deliveryInformation webhook
           enum: [POD available, Noted late, Accessorial added, Noted reweigh, Appointment Update, Missed delivery, Customs information]
-        delayedReasonCode:
+        delayReasonCode:
           type: string
-          description: See DelayReasonCodes below for valid values.
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/delayReasonCodes.txt'
         appointmentDate:
           type: string
           format: date-time
@@ -909,7 +694,7 @@ components:
           type: string
           description: e.g., Customer Request Cancelled
         customsAgent:
-          $ref: '#/components/schemas/CustomsAgentBroker'
+          $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/customsAgentBroker.txt'
         customsStatus:
           type: [string, 'null']
           enum: [Broker Identified, Bond, Hold, Cleared Customs]
@@ -917,447 +702,6 @@ components:
           type: [string, 'null']
           description: The entry number assigned by the customs agency. (if available)
 
-
-    CustomsAgentBroker:
-      type: object
-      properties:
-        type:
-          type: string
-          description: |
-            Used to identify a customs broker that is involved in a cross-border freight move.
-            Valid Values: Import or Export
-              * Import: customs broker handling the destination-side of the cross-border freight move
-              * Export: customs broker handling the origin-side of the cross-border freight move
-          enum: [Import, Export]
-        name:
-          type: string
-          description: Company name associated with the customsBroker location.
-          examples: ["Closets Closets Closets"]
-        address1:
-          type: string
-          description: Primary Address line for the customsBroker location
-          examples: ["12 S. Closets Place"]
-        address2:
-          type: string
-          description: Secondary Address line for the customsBroker location
-          examples: ["ste 3"]
-        city:
-          type: string
-          description: City Name for the customsBroker location
-          examples: ["Los Angeles"]
-        stateProvince:
-          type: string
-          description: |
-            Two letter state/province code for the customsBroker location.
-          examples: [CA]
-        postalCode:
-          type: string
-          examples: ['90001']
-          description: >
-            The 5-digit + 4 or 5-digit for the United States, 5-digit for Mexico, or 6-character for Canada, postal code for the location.
-            Valid formats
-             * 12345-1234 (5 digits + 4 - USA)
-             * 12345 (5 digits - USA/MEX)
-             * A1A1A1 (6 characters - CAN)
-        country:
-          type: string
-          examples: ["USA"]
-          description: |
-            Three letter country code for the customsBroker location.
-        contact:
-          type: object
-          description: |
-            Object containing contact details for the customsBroker.
-          required:
-            - phone
-          properties:
-            phone:
-              type: string
-              examples: ['5552226666']
-              description: >
-                Ten digit phone number, without country code and/or dashes,
-                for the customsBroker location's contact person.
-
-
-                Valid Formats:
-                * ########## (10 digits - Area code + phone)
-            phoneExt:
-              type: string
-              examples: ['99']
-              description: >-
-                Phone extension for the customsBroker location's contact
-                person.
-            name:
-              type: string
-              examples: ['Jay Pritchett']
-              description: Name of the customsBroker location's contact person.
-            email:
-              type: string
-              examples: [jpritchett@closets.com]
-              description: >-
-                Email address of the customsBroker location's contact
-                person.
-
-    AccessorialCodes:
-      type: array
-      description: |
-
-        Valid values:
-          <pre>
-          * APTD     - Appointment required at delivery
-          * APTP     - Appointment required at pickup
-          * COD      - Collect on delivery
-          * EXPD     - Expedited Service
-          * FVC      - Full value coverage
-          * GTD_AM   - Guaranteed service - by Morning
-          * GTD_NOON - Guaranteed service - by Noon
-          * GTD_PM   - Guaranteed service - by End of Day
-          * HAZ      - Hazardous material
-          * IDL      - Inside delivery
-          * INBD     - In bond shipment
-          * IPU      - Inside pickup
-          * LFTD     - Lift gate required at delivery
-          * LFTP     - Lift gate required at pickup
-          * LTDAD    - Limited access delivery
-          * LTDAP    - Limited access pickup
-          * MARK     - Marked or tagged
-          * MNC      - Must notify consignee
-          * OVR      - Over dimension/excessive length
-          * PPD      - Perishables (food)
-          * PSC      - Protective from cold
-          * PSH      - Protective from heat
-          * PSN      - Poisonous material
-          * REP      - Residential pickup
-          * RES      - Residential delivery
-          * SRT      - Sort and segregate
-          * SS       - Single Shipment
-          * TCS      - Time Critical Service
-          </pre>
-
-    LimitedAccessTypes:
-      type: string
-      description: |
-        
-        Valid Values:
-          <pre>
-          * Airport
-          * Airport-3 - Airport Cargo
-          * Church
-          * Church-55 - Place of Worship
-          * Club
-          * Club-21 - Country Club / Golf Course
-          * Club-60 - Private Club
-          * Construction
-          * Construction-17 - Construction Site
-          * Fair
-          * Fair-27 - Fairgrounds
-          * Farm
-          * Farm-30 - Fruit Orchard
-          * Farm-62 - Pumpkin Patch / Vegetable Patch
-          * Farm-87 - Winery
-          * Hotel
-          * Hotel-14 - Casino
-          * Hotel-35 - Hotel
-          * Hotel-41 - Lodging
-          * Hotel-47 - Motel / Inn
-          * Hotel-54 - Parking Lot / Garage
-          * Hotel-65 - Resort
-          * Hotel-66 - Restaurant / Bar
-          * Mine
-          * Mine-46 - Mine / Quarry
-          * Other
-          * Other-6 - Book Store
-          * Other-7 - Bowling Alley
-          * Other-8 - Brewery
-          * Other-9 - Business Park
-          * Other-12 - Car Rental
-          * Other-13 - Car Wash
-          * Other-19 - Convenience Store
-          * Other-23 - Daycare
-          * Other-24 - Dealership
-          * Other-25 - Distillery
-          * Other-26 - Factory Outlet
-          * Other-28 - Fast Food
-          * Other-31 - Funeral Home
-          * Other-33 - Gym / Fitness Center
-          * Other-38 - Laundry / Dry Cleaner
-          * Other-40 - Liquor Store
-          * Other-42 - Mall
-          * Other-48 - Native American Reservation
-          * Other-52 - Other
-          * Other-67 - Retail Store
-          * Other-68 - Salon / Barber
-          * Other-72 - Shopping Center
-          * Other-75 - Specialty Food Store
-          * Other-78 - Theater
-          * Other-80 - Truck Stop
-          * Other-83 - Vet / Kennel
-          * Park
-          * Park-4 - Amusement Park
-          * Park-5 - Aquarium
-          * Park-10 - Camp
-          * Park-11 - Campground / RV Park
-          * Park-15 - Cemetery
-          * Park-53 - Park
-          * Park-64 - Recreational
-          * Park-73 - Ski Resort
-          * Park-76 - Sports Venue
-          * Park-77 - State / National Park
-          * Park-88 - Zoo
-          * Port
-          * Port-22 - Cruise Line Terminal
-          * Port-29 - Ferry
-          * Port-43 - Marina
-          * Port-57 - Port
-          * School
-          * School-34 - Hospital
-          * School-36 - Junior College
-          * School-39 - Library / Museum
-          * School-44 - Medical Facility
-          * School-50 - Nursing Home / Assisted Living
-          * School-56 - Police / Fire / Rescue
-          * School-61 - Public Transit Station
-          * School-69 - School
-          * School-70 - School District Office
-          * School-79 - Trade School
-          * School-81 - University / College
-          * Secure
-          * Secure-32 - Government Site
-          * Secure-37 - Junkyard / Landfill
-          * Secure-45 - Military Base
-          * Secure-49 - Nuclear Power Plant
-          * Secure-51 - Oil / Gas
-          * Secure-58 - Power Plant
-          * Secure-59 - Prison / Detention Center
-          * Secure-63 - Rail Yard
-          * Secure-74 - Solar Power Farm
-          * Secure-82 - Utility Site
-          * Secure-84 - Waste Transfer Station
-          * Secure-85 - Water Treatment Plant
-          * Secure-86 - Wind Power Farm
-          * Storage
-          * Storage-18 - Container Freight Station
-          * Storage-71 - Self Storage Warehouse
-          * Tradeshow
-          * Tradeshow-16 - Conference Center
-          * Tradeshow-20 - Convention Center
-          </pre>
-
-    TimeCriticalTypes:
-      type: string
-      description: |
-        Valid Values:
-          * Deliver On Date Freight can only be delivered on the specified start date.
-          * Deliver On or After Date Freight can only be delivered on or after the specified start date.
-          * Deliver By Date Freight can only be delivered up to, and including, the specified start date.
-          * Delivery Window Freight can only be delivered between the specified start and end dates.
-      enum: [Deliver On Date, Deliver On or After Date, Deliver By Date, Delivery Window]
-
-    TimeCriticalInfo:
-      type: object
-      description: Time critical info.
-      properties: 
-        date:
-          type: [string, 'null']
-          format: date-time
-          description: TC Date may or may not be included.
-        windowStart:
-          type: [string, 'null']
-          format: time
-          description: TC Start Time of Window.
-        windowEnd: 
-          type: [string, 'null']
-          format: time
-          description: TC End Time of Window.
-
-
-    PackagingTypes:
-      type: string
-      description: |
-
-        Valid values:
-          <pre>
-          * BAG - Bag
-          * BAL - Bale
-          * BBL - Barrel
-          * BSK - Basket
-          * BIN - Bin
-          * BOX - Box
-          * BXT - Bucket
-          * BCH - Bunch
-          * BDL - Bundle
-          * CAB - Cabinet
-          * CAG - Cage
-          * CAN - Can
-          * CBY - Carboy
-          * CAR - Carrier
-          * CTN - Carton
-          * CAS - Case
-          * CSK - Cask
-          * CHS - Chest
-          * COL - Coil
-          * CNT - Container
-          * COR - Cores
-          * CRT - Crate
-          * CYL - Cylinder
-          * DRM - Drum
-          * DBK - Dry Bulk
-          * ENV - Envelope
-          * FIR - Firkin
-          * GLD - Gaylord
-          * HPR - Hamper
-          * HGH - Hogshead
-          * HRB - On Hanger or Rack in Boxes
-          * INT - Intermediate Bulk Container
-          * JAR - Jar
-          * JCN - Jerrycan
-          * KEG - Keg
-          * KIT - Kit
-          * LIF - Lifts
-          * LBK - Liquid Bulk
-          * LSE - Loose
-          * MXD - Mixed
-          * OTH - Other
-          * PKG - Package
-          * PCK - Packed
-          * PAL - Pail
-          * PAT - Pallet
-          * PCS - Piece
-          * PLN - Pipe Line
-          * RCK - Rack
-          * REL - Reel
-          * ROL - Roll
-          * SKD - Skid
-          * SLP - Slip Sheet
-          * SPL - Spool
-          * TNK - Tank
-          * TBN - Tote
-          * TRY - Tray
-          * TRU - Truckload
-          * TRK - Trunk
-          * TUB - Tub
-          * TBE - Tube
-          * UNT - Unit
-          * VPK - Van Pack
-          * WRP - Wrapped
-          </pre>
-
-    HandlingUnitTypes:
-      description: |
-
-        Valid values:
-          <pre>
-          * BAG - Bag
-          * BAL - Bale
-          * BBL - Barrel
-          * BSK - Basket
-          * BIN - Bin
-          * BOX - Box
-          * BXT - Bucket
-          * BCH - Bunch
-          * BDL - Bundle
-          * CAB - Cabinet
-          * CAG - Cage
-          * CAN - Can
-          * CBY - Carboy
-          * CAR - Carrier
-          * CTN - Carton
-          * CAS - Case
-          * CSK - Cask
-          * CHS - Chest
-          * COL - Coil
-          * CNT - Container
-          * COR - Cores
-          * CRT - Crate
-          * CYL - Cylinder
-          * DRM - Drum
-          * DBK - Dry Bulk
-          * ENV - Envelope
-          * FIR - Firkin
-          * GLD - Gaylord
-          * HPR - Hamper
-          * HGH - Hogshead
-          * HRB - On Hanger or Rack in Boxes
-          * INT - Intermediate Bulk Container
-          * JAR - Jar
-          * JCN - Jerrycan
-          * KEG - Keg
-          * KIT - Kit
-          * LIF - Lifts
-          * LBK - Liquid Bulk
-          * LSE - Loose
-          * MXD - Mixed
-          * OTH - Other
-          * PKG - Package
-          * PCK - Packed
-          * PAL - Pail
-          * PAT - Pallet
-          * PCS - Piece
-          * PLN - Pipe Line
-          * RCK - Rack
-          * REL - Reel
-          * ROL - Roll
-          * SKD - Skid
-          * SLP - Slip Sheet
-          * SPL - Spool
-          * TNK - Tank
-          * TBN - Tote
-          * TRY - Tray
-          * TRU - Truckload
-          * TRK - Trunk
-          * TUB - Tub
-          * TBE - Tube
-          * UNT - Unit
-          * VPK - Van Pack
-          * WRP - Wrapped
-          </pre>
-
-    DelayReasonCodes:
-      type: string
-      description: |
-
-        Valid Values:
-          <pre>
-          * 100-1   - Success - Delivered Full and Complete
-          * 100-2   - Success - Delivered Full and Complete within Appointment
-          * 200-1   - Delivery made with exception - Delivered with superficial damage
-          * 200-2   - Delivery made with exception - Delivered with noted product damage
-          * 200-3   - Delivery made with exception - Delivered Short
-          * 200-4   - Delivery made with exception - Waiting on Inspection
-          * 310-1   - Carrier not able to service - Area not serviced today
-          * 310-2   - Carrier not able to service - Equipment Breakdown
-          * 310-3   - Carrier not able to service - Customer request to reschedule
-          * 310-4   - Carrier not able to service - Dispatch error
-          * 310-5   - Carrier not able to service - Driver cut off
-          * 310-6   - Carrier not able to service - End of day
-          * 310-7   - Carrier not able to service - Delivery terminal capacity constraint
-          * 310-8   - Carrier not able to service - Accident
-          * 310-9   - Carrier not able to service - Bad Address Data
-          * 310-10  - Carrier not able to service - Hold For Payment
-          * 320-1   - Appointment Issue - Need Contact Information
-          * 320-2   - Appointment Issue - Need Appointment Number
-          * 320-3   - Appointment Issue - Pending consolidation to full trailer
-          * 320-4   - Appointment Issue - Left message requesting appointment
-          * 390-1   - Weather - Inclement weather
-          * 390-2   - Civil Event - Civil Event
-          * 330-1   - Consignee Closed - Consignee closed - reschedule
-          * 330-2   - Consignee Closed - Consignee closed due to holiday (dispatcher)
-          * 330-3   - Consignee Closed - Consignee closed due to holiday (driver)
-          * 450-1   - Duplicate - Duplicate delivery (dispatcher)
-          * 450-2   - Duplicate - Duplicate delivery (driver)
-          * 400-1   - Delivery request cancelled - Consignee closed - cancel
-          * 400-2   - Delivery request cancelled - Customer request to hold at terminal
-          * 400-3   - Delivery request cancelled - Customer request to cancel
-          * 410-1   - Carrier not able to service - Embargo/capacity constraint
-          * 410-2   - Carrier not able to service - Equipment not available
-          * 440-1   - Prohibited Items - Prohibited or restricted freight (dispatcher)
-          * 440-2   - Prohibited Items - Prohibited or restricted freight (driver)
-          * 430-1   - Consignee Closed - Consignee closed due to strike (dispatcher)
-          * 430-2   - Consignee Closed - Consignee closed due to strike (driver)
-          * 460-1   - Unable to Access Consignee - Unable to access delivery location
-          * 460-2   - Unable to Access Consignee - Unable to contact Consignee for appointment
-          * 460-3   - Unable to Access Consignee - Refused Delivery
-          </pre>
 
 tags:
   - name: Verified Shipment Status Queries
