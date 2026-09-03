@@ -1,0 +1,71 @@
+Shared Resource PermaLinks
+
+    
+    AccessorialCodes:
+      type: array
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/accessorialCodes.txt'
+
+    ChargeTypes:
+      type: string
+      $ref: https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/chargeTypes.txt
+
+    ChargeUnitofMeasure:
+      type: string
+      $ref: https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/chargeUnitofMeasure.txt
+
+    Commodity:
+      type: object
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/commodity.txt'
+
+    CustomsAgentBroker:
+      type: object
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/customsAgentBroker.txt'
+ 
+    DelayReasonCodes:
+      type: string
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/delayReasonCodes.txt'
+      
+    HandlingUnit:
+      type: array
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/handlingUnit.txt'
+
+    HandlingUnitTypes:
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/handlingUnitTypes.txt'
+    
+    LimitedAccessTypes:
+      type: string
+      $ref: https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/limitedAccessType.txt
+   
+    PackagingTypes:
+      type: string
+      $ref: https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/packagingTypes.txt
+
+    ReferenceNumbers:
+      type: array
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/referenceNumbers.txt'
+    
+    StandardAddress:
+      type: object
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/standardAddress.txt'
+
+    TerminalInfo:
+      type: [object, 'null']
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/terminalInfo.txt'
+
+    TimeCriticalTypes:
+      type: string
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/timeCriticalTypes.txt'
+
+    TimeCriticalInfo:
+      type: object
+      $ref: 'https://github.com/dsdcapis/less-than-truckload/blob/b6778db2dc559e2c0be3e8e26ba8172329319fc0/shared-resources/timeCriticalInfo.txt'
+
+ 
+ 
+ 
+
+   
+
+    
+
+    

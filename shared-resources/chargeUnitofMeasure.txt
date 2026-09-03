@@ -1,12 +1,8 @@
     chargeUnitOfMeasure:
       type: string
-      description: |
+      description: | The charge unit of measure indicates the type of relationship between the Rate and rateFactor. In general it will include the word "per." For isntance, CWT is cost per hundredweight. PPI is cost per piece, percent is the discount or additional factor applied.
         Valid values:
           <pre>
-          * TAR - Tarriff Pricing 
-          * DYN - Dynamic Rates 
-          * COM - Commodity Rates 
-          * CAR - Carpet Rates 
           * CWT - CWT
           * PPI - Per Piece
           * PPT - Per Pallet
