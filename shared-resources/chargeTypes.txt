@@ -10,6 +10,7 @@
           * RWE - Reweigh of the freight
           * RCC - Reconsignment of the freight
           * DET - Detention of the freight
+          * DEFC - Deficit Weight
           * MNC - Must notify consignee
           * APTD - Appointment required at delivery
           * APTP - Appointment required at pickup
