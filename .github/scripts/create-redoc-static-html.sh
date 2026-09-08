@@ -15,6 +15,10 @@ findAllFiles() {
         if head -c 4096 "$file" | grep -qE "^openapi:[[:space:]]*['\"]?[0-9]"; then
             rel_file="${file#$currentFolder/}"
             rel_dir="$(dirname "$rel_file")"
+            if [[ -n "${specFileRef[$rel_dir]:-}" ]]; then
+                echo "ERROR: multiple OpenAPI spec files found in \"$rel_dir\": \"${specFileRef[$rel_dir]}\" and \"$rel_file\". Each API version folder must contain exactly one spec file." >&2
+                exit 1
+            fi
             resultRef["$rel_dir"]="openapi"
             specFileRef["$rel_dir"]="$rel_file"
         fi
