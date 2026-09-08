@@ -18,7 +18,7 @@ The [api-prds](./api-prds) folder contains Product Requirement Documents (PRDs) 
 
 ### api-brds
 
-The [api-brds](./api-brds) folder previously contained Business Requirements Documents (BRDs) for APIs in this repository. BRDs are now co-located with their corresponding API specification in the `api-specs/` folder, alongside the `openapi.yaml` file and bundled YAML download.
+The [api-brds](./api-brds) folder previously contained Business Requirements Documents (BRDs) for APIs in this repository. BRDs are now co-located with their corresponding API specification in the `api-specs/` folder, alongside the OpenAPI specification file and bundled YAML download.
 
 ### api-specs
 
