@@ -15,7 +15,7 @@ info:
 
     AccessorialCodes:
       type: array
-      description: |
+      description: | Accessorial codes are associated with the physical movement of goods. They are used on transactions including eBOL and In Transit Visibility. 
 
         Valid values:
           <pre>
