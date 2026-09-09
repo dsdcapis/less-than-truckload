@@ -45,15 +45,16 @@ findAllFiles() {
 loadStaticHtmlToFolder() {
     local folder="$1"
     local specFile="$2"
+    local combinedFile="$3"
 
     echo "Creating folder \"$publicFolder/$folder\""
     mkdir -p "$publicFolder/$folder"
 
     echo "Bundling OpenAPI spec: \"$currentFolder/$specFile\""
-    npx @redocly/cli@latest bundle "$currentFolder/$specFile" -o "$publicFolder/$folder/openapi-combined.yaml" --ext yaml
+    npx @redocly/cli@latest bundle "$currentFolder/$specFile" -o "$publicFolder/$folder/$combinedFile" --ext yaml
 
     echo "Building docs: \"$currentFolder/$specFile\""
-    npx @redocly/cli@latest build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="openapi-combined.yaml"
+    npx @redocly/cli@latest build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="$combinedFile"
 }
 
 generateHighLevelIndex() {
@@ -500,13 +501,14 @@ ENDHEAD
                 if [[ -f "$publicFolder/$item/index.html" ]]; then
                     IFS='/' read -ra parts <<< "$item"
                     local fileName="${parts[-1]}"
-                    local fileList="${item}/openapi-combined.yaml"
+                    local combinedName="${combinedFiles[$item]}"
+                    local fileList="${item}/${combinedName}"
                     for compPath in "${!allFiles[@]}"; do
                         if [[ "${allFiles[$compPath]}" == "xlsx" && "$compPath" == "$item/"* ]]; then
                             fileList="$fileList|$compPath"
                         fi
                     done
-                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName (OpenAPI) for download\" data-file=\"$fileList\" data-name=\"${item}/openapi-combined.yaml\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$item/index.html\">$fileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"${item}/openapi-combined.yaml\" aria-label=\"Download $fileName OpenAPI spec\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
+                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName (OpenAPI) for download\" data-file=\"$fileList\" data-name=\"${item}/${combinedName}\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$item/index.html\">$fileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"${item}/${combinedName}\" aria-label=\"Download $fileName OpenAPI spec\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
                 fi
 
             elif [[ "$nodeType" == "pdf" ]]; then
@@ -756,12 +758,17 @@ mainProcess() {
 
     declare -A allFiles
     declare -A openapiFiles
+    declare -A combinedFiles
     findAllFiles allFiles openapiFiles
 
     for path in "${!allFiles[@]}"; do
         if [[ "${allFiles[$path]}" == "openapi" ]]; then
+            # Bundle output is named after the source spec (not a fixed "openapi-combined.yaml")
+            # so each spec's download has a distinct filename, e.g. for HubSpot download tracking.
+            specBasename="$(basename "${openapiFiles[$path]}")"
+            combinedFiles["$path"]="${specBasename%.yaml}-combined.yaml"
             echo "Processing OpenAPI directory: \"$path\""
-            loadStaticHtmlToFolder "$path" "${openapiFiles[$path]}"
+            loadStaticHtmlToFolder "$path" "${openapiFiles[$path]}" "${combinedFiles[$path]}"
         fi
     done
 
