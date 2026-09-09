@@ -6,12 +6,26 @@ publicFolder="$currentFolder/public"
 
 findAllFiles() {
     local -n resultRef=$1
+    local -n specFileRef=$2
     local excludeArgs=(-not -path "$currentFolder/api-prds/*" -not -path "$currentFolder/api-scopes/*")
 
-    while IFS= read -r -d '' dir; do
-        rel_dir="${dir#$currentFolder/}"
-        resultRef["$rel_dir"]="openapi"
-    done < <(find "$currentFolder" -type f -name "openapi.yaml" "${excludeArgs[@]}" -print0 | xargs -0 -n1 dirname -z | sort -zu)
+    # An OpenAPI spec file is identified by its content (a top-level "openapi:" key),
+    # not by filename, so specs can be named however each API folder likes.
+    while IFS= read -r -d '' file; do
+        if head -c 4096 "$file" | grep -qE "^openapi:[[:space:]]*['\"]?[0-9]"; then
+            rel_file="${file#$currentFolder/}"
+            rel_dir="$(dirname "$rel_file")"
+            if [[ -n "${specFileRef[$rel_dir]:-}" ]]; then
+                # exit (not return) is required here: this loop reads via process substitution
+                # (< <(...)), so it runs in the current shell, not a subshell as with `cmd | while`.
+                # exit therefore aborts the whole build instead of just this loop iteration.
+                echo "ERROR: multiple OpenAPI spec files found in \"$rel_dir\": \"${specFileRef[$rel_dir]}\" and \"$rel_file\". Each API version folder must contain exactly one spec file." >&2
+                exit 1
+            fi
+            resultRef["$rel_dir"]="openapi"
+            specFileRef["$rel_dir"]="$rel_file"
+        fi
+    done < <(find "$currentFolder" -type f \( -name "*.yaml" -o -name "*.yml" \) "${excludeArgs[@]}" -print0 | sort -z)
 
     while IFS= read -r -d '' file; do
         rel_file="${file#$currentFolder/}"
@@ -30,15 +44,16 @@ findAllFiles() {
 }
 loadStaticHtmlToFolder() {
     local folder="$1"
+    local specFile="$2"
 
     echo "Creating folder \"$publicFolder/$folder\""
     mkdir -p "$publicFolder/$folder"
 
-    echo "Bundling OpenAPI spec: \"$currentFolder/$folder/openapi.yaml\""
-    npx @redocly/cli@latest bundle "$currentFolder/$folder/openapi.yaml" -o "$publicFolder/$folder/openapi-combined.yaml" --ext yaml
+    echo "Bundling OpenAPI spec: \"$currentFolder/$specFile\""
+    npx @redocly/cli@latest bundle "$currentFolder/$specFile" -o "$publicFolder/$folder/openapi-combined.yaml" --ext yaml
 
-    echo "Building docs: \"$currentFolder/$folder/openapi.yaml\""
-    npx @redocly/cli@latest build-docs "$currentFolder/$folder/openapi.yaml" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="openapi-combined.yaml"
+    echo "Building docs: \"$currentFolder/$specFile\""
+    npx @redocly/cli@latest build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="openapi-combined.yaml"
 }
 
 generateHighLevelIndex() {
@@ -740,12 +755,13 @@ mainProcess() {
     rm -rf "$publicFolder"
 
     declare -A allFiles
-    findAllFiles allFiles
+    declare -A openapiFiles
+    findAllFiles allFiles openapiFiles
 
     for path in "${!allFiles[@]}"; do
         if [[ "${allFiles[$path]}" == "openapi" ]]; then
             echo "Processing OpenAPI directory: \"$path\""
-            loadStaticHtmlToFolder "$path"
+            loadStaticHtmlToFolder "$path" "${openapiFiles[$path]}"
         fi
     done
 
