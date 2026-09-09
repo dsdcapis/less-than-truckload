@@ -1,0 +1,20 @@
+    chargeUnitOfMeasure:
+      type: string
+      description: | The charge unit of measure indicates the type of relationship between the Rate and rateFactor. In general it will include the word "per." For isntance, CWT is cost per hundredweight. PPI is cost per piece, percent is the discount or additional factor applied.
+        Valid values:
+          <pre>
+          * CWT - CWT
+          * PPI - Per Piece
+          * PPT - Per Pallet
+          * LIN - Linear Foot 
+          * CUB - Cubic Capacity 
+          * DEN - Density Rate 
+          * SPOT - Spot Quote
+          * PROJ - Project Roll Out Rates
+          * RPM - Rate per Mile 
+          * FLAT - Flat Rate 
+          * RPH - Rate per Hour
+          * RPD - Rate per Day
+          * EA - Each
+          * PCT - Percent
+          </pre>
