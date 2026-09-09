@@ -7,7 +7,7 @@ publicFolder="$currentFolder/public"
 findAllFiles() {
     local -n resultRef=$1
     local -n specFileRef=$2
-    local excludeArgs=(-not -path "$currentFolder/api-prds/*" -not -path "$currentFolder/api-scopes/*" -not -path "$currentFolder/shared-resources/*")
+    local excludeArgs=(-not -path "$currentFolder/api-prds/*" -not -path "$currentFolder/api-scopes/*")
 
     # An OpenAPI spec file is identified by its content (a top-level "openapi:" key),
     # not by filename, so specs can be named however each API folder likes.
@@ -16,6 +16,9 @@ findAllFiles() {
             rel_file="${file#$currentFolder/}"
             rel_dir="$(dirname "$rel_file")"
             if [[ -n "${specFileRef[$rel_dir]:-}" ]]; then
+                # exit (not return) is required here: this loop reads via process substitution
+                # (< <(...)), so it runs in the current shell, not a subshell as with `cmd | while`.
+                # exit therefore aborts the whole build instead of just this loop iteration.
                 echo "ERROR: multiple OpenAPI spec files found in \"$rel_dir\": \"${specFileRef[$rel_dir]}\" and \"$rel_file\". Each API version folder must contain exactly one spec file." >&2
                 exit 1
             fi
