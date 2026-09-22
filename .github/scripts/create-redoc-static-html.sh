@@ -57,6 +57,15 @@ loadStaticHtmlToFolder() {
     npx @redocly/cli@latest build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="$combinedFile"
 }
 
+htmlEscape() {
+    local s="$1"
+    s="${s//&/&amp;}"
+    s="${s//</&lt;}"
+    s="${s//>/&gt;}"
+    s="${s//\"/&quot;}"
+    printf '%s' "$s"
+}
+
 generateHighLevelIndex() {
     local indexFile="$publicFolder/index.html"
 
@@ -71,7 +80,7 @@ generateHighLevelIndex() {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
-    <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+    <script charset="utf-8" type="text/javascript" src="https://js.hsforms.net/forms/embed/v2.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -482,6 +491,7 @@ ENDHEAD
             if [[ "$nodeType" == "folder" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local folderName="${parts[-1]}"
+                local escapedFolderName; escapedFolderName="$(htmlEscape "$folderName")"
 
                 if [[ "$item" == "shared-resources" ]]; then
                     echo "${indent}<li class=\"folder-caption\">Shared reference data used across all DSDC LTL APIs &#8212; standardized code lists and data schemas covering accessorial charges, freight classification, handling units, delay codes, address formats, and more.</li>" >> "$indexFile"
@@ -489,18 +499,20 @@ ENDHEAD
 
                 echo "${indent}<li>" >> "$indexFile"
                 echo "${indent}    <span class=\"toggle\" onclick=\"toggleFolder(this)\">▶</span>" >> "$indexFile"
-                echo "${indent}    <span class=\"folder\">$folderName</span>" >> "$indexFile"
+                echo "${indent}    <span class=\"folder\">$escapedFolderName</span>" >> "$indexFile"
                 echo "${indent}    <ul class=\"hidden\">" >> "$indexFile"
-                
+
                 printTree "$item" "$indent    "
-                
+
                 echo "${indent}    </ul>" >> "$indexFile"
                 echo "${indent}</li>" >> "$indexFile"
-                
+
             elif [[ "$nodeType" == "openapi" ]]; then
                 if [[ -f "$publicFolder/$item/index.html" ]]; then
                     IFS='/' read -ra parts <<< "$item"
                     local fileName="${parts[-1]}"
+                    local escapedFileName; escapedFileName="$(htmlEscape "$fileName")"
+                    local escapedItem; escapedItem="$(htmlEscape "$item")"
                     local combinedName="${combinedFiles[$item]}"
                     local fileList="${item}/${combinedName}"
                     for compPath in "${!allFiles[@]}"; do
@@ -508,18 +520,22 @@ ENDHEAD
                             fileList="$fileList|$compPath"
                         fi
                     done
-                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName (OpenAPI) for download\" data-file=\"$fileList\" data-name=\"${item}/${combinedName}\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$item/index.html\">$fileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"${item}/${combinedName}\" aria-label=\"Download $fileName OpenAPI spec\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
+                    echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $escapedFileName (OpenAPI) for download\" data-file=\"$(htmlEscape "$fileList")\" data-name=\"$(htmlEscape "${item}/${combinedName}")\" onchange=\"updateSelection()\"><a class=\"file-link openapi-link\" href=\"$escapedItem/index.html\">$escapedFileName (OpenAPI)</a><a class=\"quick-download-link\" href=\"$escapedItem/${combinedName}\" aria-label=\"Download $escapedFileName OpenAPI spec\" onclick=\"handleDownloadClick(event)\">&#8595; Download</a></li>" >> "$indexFile"
                 fi
 
             elif [[ "$nodeType" == "pdf" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local fileName="${parts[-1]}"
-                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link pdf-link\" href=\"$item\" onclick=\"handleDownloadClick(event); return false;\">$fileName</a></li>" >> "$indexFile"
+                local escapedFileName; escapedFileName="$(htmlEscape "$fileName")"
+                local escapedItem; escapedItem="$(htmlEscape "$item")"
+                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $escapedFileName for download\" data-file=\"$escapedItem\" data-name=\"$escapedItem\" onchange=\"updateSelection()\"><a class=\"file-link pdf-link\" href=\"$escapedItem\" onclick=\"handleDownloadClick(event)\">$escapedFileName</a></li>" >> "$indexFile"
 
             elif [[ "$nodeType" == "xlsx" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local fileName="${parts[-1]}"
-                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link xlsx-link\" href=\"$item\" onclick=\"handleDownloadClick(event); return false;\">$fileName</a></li>" >> "$indexFile"
+                local escapedFileName; escapedFileName="$(htmlEscape "$fileName")"
+                local escapedItem; escapedItem="$(htmlEscape "$item")"
+                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $escapedFileName for download\" data-file=\"$escapedItem\" data-name=\"$escapedItem\" onchange=\"updateSelection()\"><a class=\"file-link xlsx-link\" href=\"$escapedItem\" onclick=\"handleDownloadClick(event)\">$escapedFileName</a></li>" >> "$indexFile"
 
             elif [[ "$nodeType" == "txt" ]]; then
                 IFS='/' read -ra parts <<< "$item"
@@ -582,13 +598,15 @@ ENDHEAD
         }
 
         function handleDownloadClick(event) {
-            event.preventDefault();
             var cb = event.currentTarget.closest('li').querySelector('.download-checkbox');
             if (cb && !cb.checked) {
                 cb.checked = true;
                 updateSelection();
             }
-            openDownloadModal();
+            if (sessionStorage.getItem('dsdc_signed_up') === '1' || typeof hbspt !== 'undefined') {
+                event.preventDefault();
+                openDownloadModal();
+            }
         }
 
         function openDownloadModal() {
@@ -623,9 +641,10 @@ ENDHEAD
                 formId: 'dcd7e162-7c2b-457c-a40e-1c6e65c1edea',
                 target: '#hubspot-form-container',
                 onFormReady: function($form) {
-                    $form.find('input[name="dsdc_apis_downloaded"]')
-                        .val(fileList)
-                        .change();
+                    var $field = $form.find('input[name="dsdc_apis_downloaded"]');
+                    if ($field.length) {
+                        $field.val(fileList).change();
+                    }
                 },
                 onFormSubmitted: function() {
                     sessionStorage.setItem('dsdc_signed_up', '1');
@@ -650,6 +669,7 @@ ENDHEAD
         function closeDownloadModal() {
             document.getElementById('download-modal').style.display = 'none';
             if (_modalTrigger) { _modalTrigger.focus(); _modalTrigger = null; }
+            cleanDownloadUrl();
         }
 
         async function downloadFiles(files) {
@@ -693,7 +713,7 @@ ENDHEAD
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
             cleanDownloadUrl();
             showToast();
         }
