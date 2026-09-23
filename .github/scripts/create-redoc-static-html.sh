@@ -63,6 +63,7 @@ htmlEscape() {
     s="${s//</&lt;}"
     s="${s//>/&gt;}"
     s="${s//\"/&quot;}"
+    s="${s//\'/'}"
     printf '%s' "$s"
 }
 
@@ -540,7 +541,9 @@ ENDHEAD
             elif [[ "$nodeType" == "txt" ]]; then
                 IFS='/' read -ra parts <<< "$item"
                 local fileName="${parts[-1]}"
-                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $fileName for download\" data-file=\"$item\" data-name=\"$item\" onchange=\"updateSelection()\"><a class=\"file-link txt-link\" href=\"$item\" target=\"_blank\" rel=\"noopener noreferrer\">$fileName</a><a class=\"quick-download-link\" href=\"$item\" aria-label=\"Download $fileName\" onclick=\"handleDownloadClick(event); return false;\">&#8595; Download</a></li>" >> "$indexFile"
+                local escapedFileName; escapedFileName="$(htmlEscape "$fileName")"
+                local escapedItem; escapedItem="$(htmlEscape "$item")"
+                echo "${indent}<li><input type=\"checkbox\" class=\"download-checkbox\" aria-label=\"Select $escapedFileName for download\" data-file=\"$escapedItem\" data-name=\"$escapedItem\" onchange=\"updateSelection()\"><a class=\"file-link txt-link\" href=\"$escapedItem\" target=\"_blank\" rel=\"noopener noreferrer\">$escapedFileName</a><a class=\"quick-download-link\" href=\"$escapedItem\" aria-label=\"Download $escapedFileName\" onclick=\"handleDownloadClick(event)\">&#8595; Download</a></li>" >> "$indexFile"
             fi
         done
     }
