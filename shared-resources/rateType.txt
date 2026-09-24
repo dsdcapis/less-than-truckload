@@ -1,0 +1,10 @@
+    rateType:
+      type: string
+      description: | The pricing method used to determine the base rate. It will generally be associated with chargeUnitofMeasure CWT, FLAT, or SPOT. For instance, a shipment rated on the Czar99 tariff will have ChargeUnitofMeasure CWT and rateType TAR. 
+        Valid values:
+          <pre>
+          * TAR - Tarriff Pricing 
+          * DYN - Dynamic Rates 
+          * COM - Commodity Rates 
+          * CAR - Carpet Rates 
+               </pre>
