@@ -1,0 +1,27 @@
+documentationTypes:
+    type: string
+    description: The document type being provided.
+        - INV: Invoice
+        - BOL: Bill of Lading
+        - POD: Proof of Delivery
+        - HAZ: Hazardous Material Documentation
+        - CUS: Customs Documentation
+        - INS: Inspection Certificate
+        - LOA: Letter of Authority
+        - WI: Weight and Correction Certificate
+        - PHO: Photos
+        - FDA: FDA Documentation
+        - OTH: Other Documentation
+    enum:
+        - INV
+        - BOL
+        - POD
+        - HAZ
+        - CUS
+        - INS
+        - LOA
+        - WI
+        - PHO
+        - FDA
+        - OTH
+
