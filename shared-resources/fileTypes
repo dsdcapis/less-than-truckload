@@ -1,6 +1,6 @@
-documentationTypes:
+fileTypes:
     type: string
-    description: 
+    description: |
         The file type being provided.
     enum:
         - PDF

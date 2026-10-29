@@ -1,6 +1,8 @@
 documentationTypes:
     type: string
-    description: The document type being provided.
+    description: | 
+        The document type being provided.
+        
         - INV: Invoice
         - BOL: Bill of Lading
         - POD: Proof of Delivery
