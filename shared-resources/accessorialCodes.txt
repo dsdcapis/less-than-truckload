@@ -3,9 +3,9 @@ info:
   title: accessorialCodes
   description: |
     list of valid accessorial codes 
-  version: "1.0.0"
+  version: "1.0.1"
   creation date: 2026-07-20
-  update date:
+  update date: 2026-10-29
   contact: 
     name: NMFTA Digital LTL Council
     email: support@nmfta.org
@@ -16,7 +16,7 @@ info:
     AccessorialCodes:
       type: array
       description: | 
-      Accessorial codes are associated with the physical movement of goods. They are used on transactions including eBOL and In Transit Visibility. 
+        Accessorial codes are associated with the physical movement of goods. They are used on transactions including eBOL and In Transit Visibility. 
 
         Valid values:
           <pre>
