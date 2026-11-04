@@ -1,0 +1,10 @@
+fileTypes:
+    type: string
+    description: |
+        The file type being provided.
+    enum:
+        - PDF
+        - JPG
+        - TIFF
+        - PNG
+
