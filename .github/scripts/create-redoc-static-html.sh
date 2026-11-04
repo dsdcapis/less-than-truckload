@@ -51,10 +51,10 @@ loadStaticHtmlToFolder() {
     mkdir -p "$publicFolder/$folder"
 
     echo "Bundling OpenAPI spec: \"$currentFolder/$specFile\""
-    npx @redocly/cli@latest bundle "$currentFolder/$specFile" -o "$publicFolder/$folder/$combinedFile" --ext yaml
+    npx @redocly/cli@1 bundle "$currentFolder/$specFile" -o "$publicFolder/$folder/$combinedFile" --ext yaml
 
     echo "Building docs: \"$currentFolder/$specFile\""
-    npx @redocly/cli@latest build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="$combinedFile"
+    npx @redocly/cli@1 build-docs "$currentFolder/$specFile" -o "$publicFolder/$folder/index.html" --theme.openapi.downloadDefinitionUrl="$combinedFile"
 }
 
 htmlEscape() {
